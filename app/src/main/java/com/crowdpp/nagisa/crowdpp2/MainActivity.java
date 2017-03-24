@@ -63,12 +63,7 @@ public class MainActivity extends AppCompatActivity
         // add broadcastreceiver
         mBroadcastReceiver = new ActivityDetectionBroadcastReceiver(this);
 
-        Context context = getApplicationContext();
-        CharSequence text = "Acticity service running!";
-        int duration = Toast.LENGTH_LONG;
-
-        Toast toast = Toast.makeText(context, text, duration);
-        toast.show();
+        Toast.makeText(this, "Acticity service running!", Toast.LENGTH_LONG).show();
 
         // menu drawer
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -103,6 +98,7 @@ public class MainActivity extends AppCompatActivity
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
+            Toast.makeText(this, "Closing...", Toast.LENGTH_SHORT).show();
             super.onBackPressed();
         }
     }
@@ -122,7 +118,9 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_exit) {
+            Toast.makeText(this, "Closing...", Toast.LENGTH_SHORT).show();
+            this.finish();
             return true;
         }
 
