@@ -11,7 +11,7 @@ public class DataBaseTable {
 
     /** The database table for social diary */
     public static final class DiaryTable implements BaseColumns {
-        // CREATE TABLE Diary (id INTEGER PRIMARY KEY AUTOINCREMENT, time INTEGER, date TEXT, start TEXT, end TEXT, count INTEGER, percentage REAL, latitude REAL, longitude REAL, activity TEXT, confidence REAL)
+        // CREATE TABLE Diary (id INTEGER PRIMARY KEY AUTOINCREMENT, time INTEGER, date TEXT, start TEXT, end TEXT, count INTEGER, percentage REAL, latitude REAL, longitude REAL, activity TEXT, confidence INTEGER)
         private DiaryTable() {}
 
         public static final String TABLE_NAME = "Diary";

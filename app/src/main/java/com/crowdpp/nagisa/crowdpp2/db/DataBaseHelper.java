@@ -48,7 +48,7 @@ public class DataBaseHelper extends SQLiteOpenHelper{
         super.onOpen(db);
     }
 
-    public long insertDiary(SQLiteDatabase db, long sys_time, String date, String start, String end, int count, double percentage, double latitude, double longitude, String activity, double confidence) {
+    public long insertDiary(SQLiteDatabase db, long sys_time, String date, String start, String end, String activity, int confidence) {
         ContentValues cv = new ContentValues();
         db.beginTransaction();
         try {

@@ -10,7 +10,8 @@ import com.google.android.gms.location.DetectedActivity;
 import java.util.ArrayList;
 
 /**
- * Created by nagisa on 3/22/17.
+ * Activity Detection Broadcast Receiver
+ * @author Haiyue Ma
  */
 
 public class ActivityDetectionBroadcastReceiver extends BroadcastReceiver {
@@ -30,7 +31,7 @@ public class ActivityDetectionBroadcastReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         ArrayList<DetectedActivity> detectedActivities = intent.getParcelableArrayListExtra("com.crowdpp.nagisa.crowdpp2.ACTIVITY_RESULT");
         String activityString = "";
-        Log.i(TAG, "Activities received by boardcastreceiver, sending back to MainActivity...");
+        Log.d(TAG, "Activities received by boardcastreceiver, sending back to MainActivity...");
         for(DetectedActivity activity: detectedActivities){
             activityString +=  "Activity: " + mainContext.getDetectedActivity(activity.getType()) + ", Confidence: " + activity.getConfidence() + "%\n";
         }
