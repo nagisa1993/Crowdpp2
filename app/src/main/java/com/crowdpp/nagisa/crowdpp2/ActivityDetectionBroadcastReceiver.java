@@ -3,10 +3,16 @@ package com.crowdpp.nagisa.crowdpp2;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Environment;
+import android.text.format.DateFormat;
 import android.util.Log;
 
+import com.google.android.gms.location.ActivityRecognitionResult;
 import com.google.android.gms.location.DetectedActivity;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -15,8 +21,12 @@ import java.util.ArrayList;
  */
 
 public class ActivityDetectionBroadcastReceiver extends BroadcastReceiver {
+
     MainActivity mainContext;
     private static final String TAG = "BroadcastReceiver";
+    private int confidence;
+    String act, h, activityString, mostProbableActivity;
+    ArrayList<DetectedActivity> detectedActivities;
 
     public ActivityDetectionBroadcastReceiver() {
         // make the class a static class so that it can be registered in Manifest
@@ -29,12 +39,34 @@ public class ActivityDetectionBroadcastReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        ArrayList<DetectedActivity> detectedActivities = intent.getParcelableArrayListExtra("com.crowdpp.nagisa.crowdpp2.ACTIVITY_RESULT");
-        String activityString = "";
+        detectedActivities = intent.getParcelableArrayListExtra("com.crowdpp.nagisa.crowdpp2.ACTIVITY_RESULT");
+        mostProbableActivity = intent.getExtras().getString("com.crowdpp.nagisa.crowdpp2.MOST_ACTIVITY_RESULT");
         Log.d(TAG, "Activities received by boardcastreceiver, sending back to MainActivity...");
+
+        activityString  = "";
         for(DetectedActivity activity: detectedActivities){
-            activityString +=  "Activity: " + mainContext.getDetectedActivity(activity.getType()) + ", Confidence: " + activity.getConfidence() + "%\n";
+            confidence = activity.getConfidence();
+            act = mainContext.getDetectedActivity(activity.getType());
+            activityString +=  "Activity: " + act + ", Confidence: " + confidence + "%\n";
         }
+        activityString += "Most probable activity: " + mostProbableActivity;
+
+        try {
+            h = DateFormat.format("MM-dd-yyyyy-h-mmssaa", System.currentTimeMillis()).toString();
+            File root = new File(Environment.getExternalStorageDirectory(), "Activity");
+            if (!root.exists()) {
+                root.mkdirs();
+            }
+            File filepath = new File(root, h + ".txt");  // file path to save
+            FileWriter writer = new FileWriter(filepath);
+            writer.append(activityString);
+            writer.flush();
+            writer.close();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
         mainContext.mActivityTextView.setText(activityString);
     }
 }

@@ -8,8 +8,6 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.View;
@@ -28,16 +26,22 @@ import android.widget.Toast;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiActivity;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.drive.Drive;
 import com.google.android.gms.location.ActivityRecognition;
 import com.google.android.gms.location.ActivityRecognitionApi;
 import com.google.android.gms.location.DetectedActivity;
+
+import com.crowdpp.nagisa.crowdpp2.service.UploadService;
+/**
+ * Main Activity
+ * @author Haiyue Ma
+ */
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private GoogleApiClient mGoogleApiClient;
     public TextView mActivityTextView;
+    public Button mUploadBtn;
     private static final String TAG = "MyActivity";
     private ActivityDetectionBroadcastReceiver mBroadcastReceiver;
 
@@ -49,6 +53,17 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         mActivityTextView = (TextView) findViewById(R.id.activities_textview);
+        mUploadBtn = (Button) findViewById(R.id.upload_btn);
+
+        // sync to the server
+        mUploadBtn.setOnClickListener(new View.OnClickListener(){
+            public void onClick(View v) {
+                Intent countIntent = new Intent(MainActivity.this, UploadService.class);
+                startService(countIntent);
+                Log.d("MainActivity", "Start service");
+                Toast.makeText(MainActivity.this, "Service is running!", Toast.LENGTH_LONG).show();
+            }
+        });
 
         // Create a GoogleApiClient instance
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -158,7 +173,7 @@ public class MainActivity extends AppCompatActivity
         Log.d(TAG, "Connection Setup");
         Intent intent = new Intent(this, ActivityRecognizedService.class);
         PendingIntent pendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(mGoogleApiClient, 3000, pendingIntent);
+        ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(mGoogleApiClient, 10000, pendingIntent);
         Log.d(TAG, "Intent Setup");
 
     }

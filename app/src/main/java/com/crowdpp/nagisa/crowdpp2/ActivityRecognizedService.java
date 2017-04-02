@@ -4,6 +4,7 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Environment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -28,13 +29,10 @@ import java.util.Queue;
 
 public class ActivityRecognizedService extends IntentService{
 
-    private DataBaseHelper mDatabase;
-    private SQLiteDatabase mDB;
     private static final String TAG = "IntentService";
 
     static long sys_time;
-    static int confidence;
-    static String date, start, end, activity, filename;
+    static String date, start, end, filename;
 
     public Queue<String> activityFilename = new LinkedList<String>();
 
@@ -51,37 +49,18 @@ public class ActivityRecognizedService extends IntentService{
         if(ActivityRecognitionResult.hasResult(intent)) {
             ActivityRecognitionResult result = ActivityRecognitionResult.extractResult(intent);
             ArrayList<DetectedActivity> detectedActivities = (ArrayList) result.getProbableActivities();
-            DetectedActivity ac = result.getMostProbableActivity();
-            Log.d(TAG, "get activity");
-
-            date = Now.getDate();
-            start = Now.getTimeOfDay();
-            end = Now.getTimeOfDay();
-            confidence = ac.getConfidence();
-            activity = getDetectedActivity(ac.getType());
-
-            try {
-                File activity_dir = new File(Constants.crowdppPath + "/activity/");
-                if (!activity_dir.exists()){
-                    activity_dir.mkdir();
-                }
-
-                filename = "Crowdpp_" + date + "_" + start + ".txt";
-                File filepath = new File(activity_dir, filename);
-                FileWriter writer = new FileWriter(filepath);
-                writer.append(activity + ", " + confidence + "%");
-                writer.flush();
-                writer.close();
-                Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show();
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
-
+            String mostProbableActivity = getDetectedActivity(result.getMostProbableActivity().getType());
+//            Log.d(TAG, "get activity");
+//
+//            date = Now.getDate();
+//            start = Now.getTimeOfDay();
+//            Log.d(TAG, "start time" + start);
+//            end = Now.getTimeOfDay();
 
             Log.d(TAG, "Activity_intent received, boardcasting activities...");
             Intent i = new Intent("com.crowdpp.nagisa.crowdpp2.ACTIVITY_ALL");
             i.putExtra("com.crowdpp.nagisa.crowdpp2.ACTIVITY_RESULT", detectedActivities);
+            i.putExtra("com.crowdpp.nagisa.crowdpp2.MOST_ACTIVITY_RESULT", mostProbableActivity);
             LocalBroadcastManager.getInstance(this).sendBroadcast(i);
         }
     }
