@@ -4,6 +4,7 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Environment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -15,8 +16,10 @@ import com.google.android.gms.location.ActivityRecognitionResult;
 import com.google.android.gms.location.DetectedActivity;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -60,18 +63,35 @@ public class ActivityRecognizedService extends IntentService{
             confidence = ac.getConfidence();
             activity = getDetectedActivity(ac.getType());
 
+            Log.d(TAG, Environment.getExternalStorageDirectory().getPath());
+            //File activity_dir = new File(Environment.getExternalStorageDirectory() + "/Crowdpp", "activity");
+
             try {
                 File activity_dir = new File(Constants.crowdppPath + "/activity/");
+                if (!activity_dir.getParentFile().exists())
+                    activity_dir.getParentFile().mkdirs();
                 if (!activity_dir.exists()){
+                    Log.d(TAG, "directory created!" + activity_dir);
                     activity_dir.mkdir();
                 }
 
                 filename = "Crowdpp_" + date + "_" + start + ".txt";
                 File filepath = new File(activity_dir, filename);
-                FileWriter writer = new FileWriter(filepath);
-                writer.append(activity + ", " + confidence + "%");
-                writer.flush();
+                if(!filepath.exists()) {
+                    try{
+                        Log.d(TAG, "file created!" + filename);
+                        filepath.createNewFile();
+                    }
+                    catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                OutputStream writer = new FileOutputStream(filepath);
+                String content = activity + ", " + confidence + "%";
+                writer.write(content.getBytes());
                 writer.close();
+                activityFilename.add(filename);
                 Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show();
             }
             catch (IOException e) {
