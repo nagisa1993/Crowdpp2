@@ -12,7 +12,6 @@ import android.widget.Toast;
 
 import com.crowdpp.nagisa.crowdpp2.R;
 import com.crowdpp.nagisa.crowdpp2.util.Now;
-
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
