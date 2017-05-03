@@ -2,12 +2,16 @@ package com.crowdpp.nagisa.crowdpp2.service;
 
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
+import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.crowdpp.nagisa.crowdpp2.R;
+import com.crowdpp.nagisa.crowdpp2.util.Now;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -34,10 +38,14 @@ public class UploadService extends Service{
     private boolean canUpload = false;
     private boolean isUpload = false;
     private Handler mPeriodicEventHandler;
+    private SharedPreferences settings;
 
     private String lineend = "\r\n";
     private String twoHyphens = "--";
     private String boundary = "******";
+    private String selected, period, interval, duration, curr_hr;
+    private boolean upload;
+    private int start_hr, end_hr;
 
     Queue<String> activityQueue = new LinkedList<String>();
 
@@ -53,9 +61,31 @@ public class UploadService extends Service{
         // kill service by itself when uploading service finish
         //stopSelf();
 
-        // upload file every 1 minute
-        mPeriodicEventHandler = new Handler();
-        mPeriodicEventHandler.postDelayed(doPeriodicTask, PERIODIC_EVENT_TIMEOUT);
+        // get settings
+        settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        selected = settings.getString("interval", "1");
+        interval = getResources().getStringArray(R.array.IntervalArrays)[Integer.parseInt(selected)];
+//        selected = settings.getString("duration", "1");
+//        duration = getResources().getStringArray(R.array.DurationArrays)[Integer.parseInt(selected)];
+        period = settings.getString("period", "9,21");
+        start_hr = Integer.parseInt(period.split(",")[0]);
+        end_hr = Integer.parseInt(period.split(",")[1]);
+        upload = settings.getBoolean("upload", true);
+        Log.d("TAG", "setting: " + interval + duration + period);
+
+        curr_hr = Now.getHour();
+        if(upload && Integer.parseInt(curr_hr) >= start_hr && Integer.parseInt(curr_hr) < end_hr) {
+            // upload file every 1 minute
+            mPeriodicEventHandler = new Handler();
+            mPeriodicEventHandler.postDelayed(doPeriodicTask, Integer.parseInt(interval.split("\\\\s+")[0]));
+        }
+        else if(!upload) {
+            Log.d("TAG", "Upload closed.");
+        }
+        else {
+            Log.d("TAG", "Out of time period.");
+        }
+
         //uploadFile();
 
 //        IntentFilter it = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
@@ -184,8 +214,9 @@ public class UploadService extends Service{
                 }
                 else
                     canUpload = false;
-                mPeriodicEventHandler.postDelayed(doPeriodicTask, PERIODIC_EVENT_TIMEOUT);
+                mPeriodicEventHandler.postDelayed(doPeriodicTask, Integer.parseInt(interval.split("\\\\s+")[0]));
             }  catch (Exception ex) {
+                Log.e("PeriodicTask", ex.toString());
             }
         }
     };

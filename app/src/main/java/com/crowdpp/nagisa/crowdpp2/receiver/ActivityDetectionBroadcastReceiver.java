@@ -7,7 +7,7 @@ import android.os.Environment;
 import android.text.format.DateFormat;
 import android.util.Log;
 
-import com.crowdpp.nagisa.crowdpp2.ui.MainActivity;
+import com.crowdpp.nagisa.crowdpp2.MainActivity;
 import com.google.android.gms.location.DetectedActivity;
 
 import java.io.File;

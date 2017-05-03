@@ -1,10 +1,13 @@
-package com.crowdpp.nagisa.crowdpp2.ui;
+package com.crowdpp.nagisa.crowdpp2;
 
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Resources;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.CallLog;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
@@ -22,7 +25,6 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.crowdpp.nagisa.crowdpp2.R;
 import com.crowdpp.nagisa.crowdpp2.receiver.ActivityDetectionBroadcastReceiver;
 import com.crowdpp.nagisa.crowdpp2.service.ActivityRecognizedService;
 import com.google.android.gms.common.ConnectionResult;
@@ -37,11 +39,12 @@ import com.crowdpp.nagisa.crowdpp2.service.UploadService;
  */
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+        implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private GoogleApiClient mGoogleApiClient;
     public TextView mActivityTextView;
-    public Button mUploadBtn;
+    public Button mUploadBtn, mLogBtn;
+    public Toolbar toolbar;
     private static final String TAG = "MyActivity";
     private ActivityDetectionBroadcastReceiver mBroadcastReceiver;
 
@@ -49,21 +52,75 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        mActivityTextView = (TextView) findViewById(R.id.activities_textview);
-        mUploadBtn = (Button) findViewById(R.id.upload_btn);
+        if(savedInstanceState == null){
+            MainFragment mainFragment = new MainFragment();
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .add(R.id.fragment_container, mainFragment)
+                    .addToBackStack(null)
+                    .commit();
+        }
 
-        // sync to the server
-        mUploadBtn.setOnClickListener(new View.OnClickListener(){
-            public void onClick(View v) {
-                Intent countIntent = new Intent(MainActivity.this, UploadService.class);
-                startService(countIntent);
-                Log.d("MainActivity", "Start service");
-                Toast.makeText(MainActivity.this, "Service is running!", Toast.LENGTH_LONG).show();
-            }
-        });
+//        mActivityTextView = (TextView) findViewById(R.id.activities_textview);
+//        mUploadBtn = (Button) findViewById(R.id.upload_btn);
+//        mLogBtn = (Button) findViewById(R.id.log_btn);
+//
+//        // sync to the server
+//        mUploadBtn.setOnClickListener(new View.OnClickListener(){
+//            public void onClick(View v) {
+//                Intent countIntent = new Intent(MainActivity.this, UploadService.class);
+//                startService(countIntent);
+//                Log.d("MainActivity", "Start service");
+//                Toast.makeText(MainActivity.this, "Service is running!", Toast.LENGTH_LONG).show();
+//            }
+//        });
+//
+//        mLogBtn.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                // quiry sms
+//                Uri uriSms = Uri.parse("content://sms/inbox");
+//                Cursor cursor_sms = getContentResolver().query(uriSms, new String[]{"_id", "address", "date", "body", "date", "type"},null,null,null);
+//
+//                cursor_sms.moveToFirst();
+//                while  (cursor_sms.moveToNext())
+//                {
+//                    String address = cursor_sms.getString(1);
+//                    String body = cursor_sms.getString(3);
+//
+//                    Log.d(TAG, "Mobile number: " + address);
+//                    Log.d(TAG, "Text: " + body);
+//                }
+//
+//                // quiry call log
+//                Uri allCalls = Uri.parse("content://call_log/calls");
+//                Cursor cursor_call = getContentResolver().query(allCalls, null, null, null, null);
+//
+//                cursor_call.moveToFirst();
+//                while (cursor_call.moveToNext()) {
+//                    String callerID = cursor_call.getString(cursor_call.getColumnIndex(CallLog.Calls._ID));
+//                    String callerNumber = cursor_call.getString(cursor_call.getColumnIndex(CallLog.Calls.NUMBER));
+//                    long callDateandTime = cursor_call.getLong(cursor_call.getColumnIndex(CallLog.Calls.DATE));
+//                    long callDuration = cursor_call.getLong(cursor_call.getColumnIndex(CallLog.Calls.DURATION));
+//                    int callType = cursor_call.getInt(cursor_call.getColumnIndex(CallLog.Calls.TYPE));
+//                    if(callType == CallLog.Calls.INCOMING_TYPE)
+//                    {
+//                        //incoming call
+//                    }
+//                    else if(callType == CallLog.Calls.OUTGOING_TYPE)
+//                    {
+//                        //outgoing call
+//                    }
+//                    else if(callType == CallLog.Calls.MISSED_TYPE)
+//                    {
+//                        //missed call
+//                    }
+//                }
+//            }
+//        });
 
         // Create a GoogleApiClient instance
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -77,19 +134,6 @@ public class MainActivity extends AppCompatActivity
 
         // add broadcastreceiver
         mBroadcastReceiver = new ActivityDetectionBroadcastReceiver(this);
-
-        Toast.makeText(this, "Acticity service running!", Toast.LENGTH_LONG).show();
-
-        // menu drawer
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
-        toggle.syncState();
-
-        // set menu drawer lists
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
     }
 
     @Override
@@ -108,14 +152,8 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        // close menu drawer or return to home
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            Toast.makeText(this, "Closing...", Toast.LENGTH_SHORT).show();
-            super.onBackPressed();
-        }
+        Toast.makeText(this, "Closing...", Toast.LENGTH_SHORT).show();
+        super.onBackPressed();
     }
 
     @Override
@@ -127,11 +165,16 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
+        if (id == R.id.action_contact) {
+            ContactFragment contactFragment = new ContactFragment();
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, contactFragment)
+                    .addToBackStack(null)
+                    .commit();
+        }
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_exit) {
             Toast.makeText(this, "Closing...", Toast.LENGTH_SHORT).show();
@@ -140,31 +183,6 @@ public class MainActivity extends AppCompatActivity
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    @SuppressWarnings("StatementWithEmptyBody")
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
-
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
-        }
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
     }
 
     // override for GoogleApiClient

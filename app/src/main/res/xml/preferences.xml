@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <android.support.v7.preference.PreferenceCategory
+        android:title="Interval">
+    <!--<ListPreference-->
+        <!--android:title="Period"-->
+        <!--android:summary="Specify when you want the service to run everyday."-->
+        <!--android:key="period" />-->
+    <com.crowdpp.nagisa.crowdppui.TimePreference
+        android:key="period"
+        android:title="Period"
+        android:summary="Specify when you want the service to run everyday."
+        android:defaultValue="9,21" />
+
+    <android.support.v7.preference.ListPreference
+        android:title="Interval"
+        android:summary="Specify how frequently you want the service to run."
+        android:key="interval"
+        android:defaultValue="1"
+        android:entries="@array/IntervalArrays"
+        android:entryValues="@array/IntervalValues" />
+
+    <android.support.v7.preference.ListPreference
+        android:title="Duration"
+        android:summary="Specify how long you want to record every time."
+        android:key="duration"
+        android:defaultValue="1"
+        android:entries="@array/DurationArrays"
+        android:entryValues="@array/DurationValues" />
+    </android.support.v7.preference.PreferenceCategory>
+
+    <android.support.v7.preference.PreferenceCategory
+        android:title="Service">
+
+        <android.support.v7.preference.SwitchPreferenceCompat
+            android:key="location"
+            android:title="Location Service"
+            android:defaultValue="true" />
+
+        <android.support.v7.preference.SwitchPreferenceCompat
+            android:key="upload"
+            android:title="Upload Service"
+            android:defaultValue="true" />
+    </android.support.v7.preference.PreferenceCategory>
+
+
+</android.support.v7.preference.PreferenceScreen>
