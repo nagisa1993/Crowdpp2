@@ -1,7 +1,6 @@
-package com.crowdpp.nagisa.crowdpp2;
+package com.crowdpp.nagisa.crowdpp2.ui;
 
 import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Resources;
@@ -23,11 +22,12 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.crowdpp.nagisa.crowdpp2.R;
+import com.crowdpp.nagisa.crowdpp2.receiver.ActivityDetectionBroadcastReceiver;
+import com.crowdpp.nagisa.crowdpp2.service.ActivityRecognizedService;
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiActivity;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.ActivityRecognition;
-import com.google.android.gms.location.ActivityRecognitionApi;
 import com.google.android.gms.location.DetectedActivity;
 
 import com.crowdpp.nagisa.crowdpp2.service.UploadService;

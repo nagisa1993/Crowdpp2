@@ -1,4 +1,4 @@
-package com.crowdpp.nagisa.crowdpp2;
+package com.crowdpp.nagisa.crowdpp2.service;
 
 import android.app.IntentService;
 import android.content.Intent;
@@ -9,6 +9,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.crowdpp.nagisa.crowdpp2.R;
 import com.crowdpp.nagisa.crowdpp2.db.DataBaseHelper;
 import com.crowdpp.nagisa.crowdpp2.util.Constants;
 import com.crowdpp.nagisa.crowdpp2.util.Now;

@@ -1,4 +1,4 @@
-package com.crowdpp.nagisa.crowdpp2;
+package com.crowdpp.nagisa.crowdpp2.receiver;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -7,7 +7,7 @@ import android.os.Environment;
 import android.text.format.DateFormat;
 import android.util.Log;
 
-import com.google.android.gms.location.ActivityRecognitionResult;
+import com.crowdpp.nagisa.crowdpp2.ui.MainActivity;
 import com.google.android.gms.location.DetectedActivity;
 
 import java.io.File;
