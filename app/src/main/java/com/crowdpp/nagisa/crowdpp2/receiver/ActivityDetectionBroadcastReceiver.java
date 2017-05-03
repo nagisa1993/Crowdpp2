@@ -66,7 +66,5 @@ public class ActivityDetectionBroadcastReceiver extends BroadcastReceiver {
         catch (IOException e) {
             e.printStackTrace();
         }
-
-        mainContext.mActivityTextView.setText(activityString);
     }
 }
