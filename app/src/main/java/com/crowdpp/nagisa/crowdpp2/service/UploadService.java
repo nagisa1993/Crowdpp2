@@ -80,6 +80,7 @@ public class UploadService extends Service{
             mPeriodicEventHandler.postDelayed(doPeriodicTask, Integer.parseInt(interval.split("\\\\s+")[0]));
         }
         else if(!upload) {
+            stopSelf();
             Log.d("TAG", "Upload closed.");
         }
         else {

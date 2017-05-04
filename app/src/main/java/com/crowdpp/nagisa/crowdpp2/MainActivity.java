@@ -12,11 +12,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.view.View;
-import android.support.design.widget.NavigationView;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -39,7 +34,8 @@ import com.crowdpp.nagisa.crowdpp2.service.UploadService;
  */
 
 public class MainActivity extends AppCompatActivity
-        implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+//        implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener
+{
 
     private GoogleApiClient mGoogleApiClient;
     public TextView mActivityTextView;
@@ -123,30 +119,30 @@ public class MainActivity extends AppCompatActivity
 //        });
 
         // Create a GoogleApiClient instance
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addApi(ActivityRecognition.API)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .build();
-
-        // when connect() is called, need to create a PendingIntent that goes to the IntentService in onConnected()
-        mGoogleApiClient.connect();
-
-        // add broadcastreceiver
-        mBroadcastReceiver = new ActivityDetectionBroadcastReceiver(this);
+//        mGoogleApiClient = new GoogleApiClient.Builder(this)
+//                .addApi(ActivityRecognition.API)
+//                .addConnectionCallbacks(this)
+//                .addOnConnectionFailedListener(this)
+//                .build();
+//
+//        // when connect() is called, need to create a PendingIntent that goes to the IntentService in onConnected()
+//        mGoogleApiClient.connect();
+//
+//        // add broadcastreceiver
+//        mBroadcastReceiver = new ActivityDetectionBroadcastReceiver(this);
     }
 
     @Override
     protected void onResume() {
         // register boardcastreceiver
         super.onResume();
-        LocalBroadcastManager.getInstance(this).registerReceiver(mBroadcastReceiver, new IntentFilter("com.crowdpp.nagisa.crowdpp2.ACTIVITY_ALL"));
+        //LocalBroadcastManager.getInstance(this).registerReceiver(mBroadcastReceiver, new IntentFilter("com.crowdpp.nagisa.crowdpp2.ACTIVITY_ALL"));
     }
 
     @Override
     protected void onPause() {
         // unregister boardcastreceiver
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mBroadcastReceiver);
+        //LocalBroadcastManager.getInstance(this).unregisterReceiver(mBroadcastReceiver);
         super.onPause();
     }
 
@@ -186,50 +182,50 @@ public class MainActivity extends AppCompatActivity
     }
 
     // override for GoogleApiClient
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        Log.d(TAG, "Connection Setup");
-        Intent intent = new Intent(this, ActivityRecognizedService.class);
-        PendingIntent pendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(mGoogleApiClient, 10000, pendingIntent);
-        Log.d(TAG, "Intent Setup");
-
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-        Log.d(TAG, "Connection Suspended");
-        mGoogleApiClient.connect();
-        Log.d(TAG, "Connection Setup again");
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Log.d(TAG, "Connection Failed. Error: " + connectionResult.getErrorMessage());
-    }
-
-    // return different kind of activity according to activityresult
-    public String getDetectedActivity(int detectedActivityType) {
-        Resources resources = this.getResources();
-        switch(detectedActivityType) {
-            case DetectedActivity.IN_VEHICLE:
-                return resources.getString(R.string.in_vehicle);
-            case DetectedActivity.ON_BICYCLE:
-                return resources.getString(R.string.on_bicycle);
-            case DetectedActivity.ON_FOOT:
-                return resources.getString(R.string.on_foot);
-            case DetectedActivity.RUNNING:
-                return resources.getString(R.string.running);
-            case DetectedActivity.WALKING:
-                return resources.getString(R.string.walking);
-            case DetectedActivity.STILL:
-                return resources.getString(R.string.still);
-            case DetectedActivity.TILTING:
-                return resources.getString(R.string.tilting);
-            case DetectedActivity.UNKNOWN:
-                return resources.getString(R.string.unknown);
-            default:
-                return resources.getString(R.string.unidentifiable_activity, detectedActivityType);
-        }
-    }
+//    @Override
+//    public void onConnected(@Nullable Bundle bundle) {
+//        Log.d(TAG, "Connection Setup");
+//        Intent intent = new Intent(this, ActivityRecognizedService.class);
+//        PendingIntent pendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+//        ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(mGoogleApiClient, 10000, pendingIntent);
+//        Log.d(TAG, "Intent Setup");
+//
+//    }
+//
+//    @Override
+//    public void onConnectionSuspended(int i) {
+//        Log.d(TAG, "Connection Suspended");
+//        mGoogleApiClient.connect();
+//        Log.d(TAG, "Connection Setup again");
+//    }
+//
+//    @Override
+//    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+//        Log.d(TAG, "Connection Failed. Error: " + connectionResult.getErrorMessage());
+//    }
+//
+//    // return different kind of activity according to activityresult
+//    public String getDetectedActivity(int detectedActivityType) {
+//        Resources resources = this.getResources();
+//        switch(detectedActivityType) {
+//            case DetectedActivity.IN_VEHICLE:
+//                return resources.getString(R.string.in_vehicle);
+//            case DetectedActivity.ON_BICYCLE:
+//                return resources.getString(R.string.on_bicycle);
+//            case DetectedActivity.ON_FOOT:
+//                return resources.getString(R.string.on_foot);
+//            case DetectedActivity.RUNNING:
+//                return resources.getString(R.string.running);
+//            case DetectedActivity.WALKING:
+//                return resources.getString(R.string.walking);
+//            case DetectedActivity.STILL:
+//                return resources.getString(R.string.still);
+//            case DetectedActivity.TILTING:
+//                return resources.getString(R.string.tilting);
+//            case DetectedActivity.UNKNOWN:
+//                return resources.getString(R.string.unknown);
+//            default:
+//                return resources.getString(R.string.unidentifiable_activity, detectedActivityType);
+//        }
+//    }
 }

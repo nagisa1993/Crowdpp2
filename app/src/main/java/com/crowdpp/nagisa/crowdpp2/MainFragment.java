@@ -1,9 +1,15 @@
 package com.crowdpp.nagisa.crowdpp2;
 
+import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,18 +18,30 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.crowdpp.nagisa.crowdpp2.receiver.ActivityDetectionBroadcastReceiver;
+import com.crowdpp.nagisa.crowdpp2.service.ActivityRecognizedService;
 import com.crowdpp.nagisa.crowdpp2.service.UploadService;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.ActivityRecognition;
+import com.google.android.gms.location.DetectedActivity;
 
 /**
  * Created by nagisa on 4/4/17.
  */
 
-public class MainFragment extends Fragment implements View.OnClickListener {
-    Button mActivityBtn, mSettingBtn, mHelpBtn, mLogBtn, maaa;
+public class MainFragment extends Fragment implements View.OnClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+    Button mActivityBtn, mSettingBtn, mHelpBtn, mLogBtn;
+    private final String TAG = "MainFragment";
+    private SharedPreferences settings;
+    private boolean upload;
+    private GoogleApiClient mGoogleApiClient;
+    private ActivityDetectionBroadcastReceiver mBroadcastReceiver;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.main_fragment, container, false);
+        Log.d(TAG, "create main fragment");
 
         ((MainActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(false);
         ((MainActivity)getActivity()).getSupportActionBar().setTitle("Activity Logger");
@@ -37,11 +55,31 @@ public class MainFragment extends Fragment implements View.OnClickListener {
         mHelpBtn = (Button) rootView.findViewById(R.id.help_btn);
         mHelpBtn.setOnClickListener(this);
 
-        maaa = (Button) rootView.findViewById(R.id.aaa);
-        maaa.setOnClickListener(this);
-
         mLogBtn = (Button) rootView.findViewById(R.id.log_btn);
         mLogBtn.setOnClickListener(this);
+
+        settings = PreferenceManager.getDefaultSharedPreferences(getContext());
+        upload = settings.getBoolean("upload", true);
+
+        // Create a GoogleApiClient instance
+        mGoogleApiClient = new GoogleApiClient.Builder(getContext())
+                .addApi(ActivityRecognition.API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
+
+        if(upload) {
+            Intent countIntent = new Intent(getContext(), UploadService.class);
+            getContext().startService(countIntent);
+            Log.d(TAG, "Start upload service in background");
+        }
+        else {
+            Log.d(TAG, "Upload service unenabled");
+        }
+
+        // add broadcastreceiver
+        mBroadcastReceiver = new ActivityDetectionBroadcastReceiver(this);
+
         return rootView;
     }
 
@@ -49,10 +87,8 @@ public class MainFragment extends Fragment implements View.OnClickListener {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.activity_btn: {
-                Intent countIntent = new Intent(getContext(), UploadService.class);
-                getContext().startService(countIntent);
-                Log.d("MainActivity", "Start service");
-                Toast.makeText(getContext(), "Service is running!", Toast.LENGTH_LONG).show();
+                if(!mGoogleApiClient.isConnected())
+                    mGoogleApiClient.connect();
                 break;
             }
 
@@ -87,26 +123,71 @@ public class MainFragment extends Fragment implements View.OnClickListener {
                 break;
             }
 
-            case R.id.aaa: {
-
-                // 用来查看preference
-                SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
-                // list
-                String duration = sharedPref.getString("duration", "1");
-                String selected = getResources().getStringArray(R.array.DurationArrays)[Integer.parseInt(duration)];
-
-                // switch
-                boolean b = sharedPref.getBoolean("upload", true);
-
-                // dialog
-                String period = sharedPref.getString("period", "9,21");
-                Toast.makeText(getContext(), selected + (b ? " true" : " false") + period, Toast.LENGTH_LONG).show();
-                break;
-            }
-
             default:
                 break;
         }
 
+    }
+
+    @Override
+    public void onResume() {
+        // register boardcastreceiver
+        super.onResume();
+        LocalBroadcastManager.getInstance(getContext()).registerReceiver(mBroadcastReceiver, new IntentFilter("com.crowdpp.nagisa.crowdpp2.ACTIVITY_ALL"));
+    }
+
+    @Override
+    public void onPause() {
+        // unregister boardcastreceiver
+        LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(mBroadcastReceiver);
+        super.onPause();
+    }
+
+    // override for GoogleApiClient
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        Log.d(TAG, "Connection Setup");
+        Intent intent = new Intent(getContext(), ActivityRecognizedService.class);
+        PendingIntent pendingIntent = PendingIntent.getService(getContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(mGoogleApiClient, 10000, pendingIntent);
+        Log.d(TAG, "Intent Setup");
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        Log.d(TAG, "Connection Suspended");
+        mGoogleApiClient.connect();
+        Log.d(TAG, "Connection Setup again");
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Log.d(TAG, "Connection Failed. Error: " + connectionResult.getErrorMessage());
+    }
+
+    // return different kind of activity according to activityresult
+    public String getDetectedActivity(int detectedActivityType) {
+        Resources resources = this.getResources();
+        switch(detectedActivityType) {
+            case DetectedActivity.IN_VEHICLE:
+                return resources.getString(R.string.in_vehicle);
+            case DetectedActivity.ON_BICYCLE:
+                return resources.getString(R.string.on_bicycle);
+            case DetectedActivity.ON_FOOT:
+                return resources.getString(R.string.on_foot);
+            case DetectedActivity.RUNNING:
+                return resources.getString(R.string.running);
+            case DetectedActivity.WALKING:
+                return resources.getString(R.string.walking);
+            case DetectedActivity.STILL:
+                return resources.getString(R.string.still);
+            case DetectedActivity.TILTING:
+                return resources.getString(R.string.tilting);
+            case DetectedActivity.UNKNOWN:
+                return resources.getString(R.string.unknown);
+            default:
+                return resources.getString(R.string.unidentifiable_activity, detectedActivityType);
+        }
     }
 }

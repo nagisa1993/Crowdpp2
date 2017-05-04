@@ -8,6 +8,7 @@ import android.text.format.DateFormat;
 import android.util.Log;
 
 import com.crowdpp.nagisa.crowdpp2.MainActivity;
+import com.crowdpp.nagisa.crowdpp2.MainFragment;
 import com.google.android.gms.location.DetectedActivity;
 
 import java.io.File;
@@ -22,7 +23,8 @@ import java.util.ArrayList;
 
 public class ActivityDetectionBroadcastReceiver extends BroadcastReceiver {
 
-    MainActivity mainContext;
+    //MainActivity mainContext;
+    MainFragment mainFragmentContext;
     private static final String TAG = "BroadcastReceiver";
     private int confidence;
     String act, h, activityString, mostProbableActivity;
@@ -33,8 +35,8 @@ public class ActivityDetectionBroadcastReceiver extends BroadcastReceiver {
         super();
     }
 
-    public ActivityDetectionBroadcastReceiver(MainActivity Context){
-        mainContext = Context;
+    public ActivityDetectionBroadcastReceiver(MainFragment Context){
+        mainFragmentContext = Context;
     }
 
     @Override
@@ -46,7 +48,7 @@ public class ActivityDetectionBroadcastReceiver extends BroadcastReceiver {
         activityString  = "";
         for(DetectedActivity activity: detectedActivities){
             confidence = activity.getConfidence();
-            act = mainContext.getDetectedActivity(activity.getType());
+            act = mainFragmentContext.getDetectedActivity(activity.getType());
             activityString +=  "Activity: " + act + ", Confidence: " + confidence + "%\n";
         }
         activityString += "Most probable activity: " + mostProbableActivity;
