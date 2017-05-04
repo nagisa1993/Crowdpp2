@@ -6,7 +6,7 @@
         <!--android:title="Period"-->
         <!--android:summary="Specify when you want the service to run everyday."-->
         <!--android:key="period" />-->
-    <com.crowdpp.nagisa.crowdppui.TimePreference
+    <com.crowdpp.nagisa.crowdpp2.util.TimePreference
         android:key="period"
         android:title="Period"
         android:summary="Specify when you want the service to run everyday."
