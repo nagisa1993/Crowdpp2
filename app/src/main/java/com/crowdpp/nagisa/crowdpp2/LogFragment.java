@@ -11,6 +11,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
@@ -50,6 +51,21 @@ public class LogFragment extends Fragment{
         ((MainActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         ((MainActivity)getActivity()).getSupportActionBar().setTitle("Log");
 
+        Toolbar toolbar = ((MainActivity) getActivity()).toolbar;
+        toolbar.setNavigationOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                FragmentManager fm = getFragmentManager();
+                fm.popBackStack();
+            }
+        });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+//        FragmentManager fm = getFragmentManager();
+//        Log.d("clickinlog", Integer.toString(fm.getBackStackEntryCount()));
         Toolbar toolbar = ((MainActivity) getActivity()).toolbar;
         toolbar.setNavigationOnClickListener(new View.OnClickListener(){
             @Override

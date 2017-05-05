@@ -9,12 +9,12 @@
     <com.crowdpp.nagisa.crowdpp2.util.TimePreference
         android:key="period"
         android:title="Period"
-        android:summary="Specify when you want the service to run everyday."
+        android:summary="9:00 - 21:00"
         android:defaultValue="9,21" />
 
     <android.support.v7.preference.ListPreference
         android:title="Interval"
-        android:summary="Specify how frequently you want the service to run."
+        android:summary="%s"
         android:key="interval"
         android:defaultValue="1"
         android:entries="@array/IntervalArrays"
@@ -22,7 +22,7 @@
 
     <android.support.v7.preference.ListPreference
         android:title="Duration"
-        android:summary="Specify how long you want to record every time."
+        android:summary="%s"
         android:key="duration"
         android:defaultValue="1"
         android:entries="@array/DurationArrays"

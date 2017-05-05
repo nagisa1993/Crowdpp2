@@ -16,6 +16,7 @@ import android.support.v7.preference.SwitchPreferenceCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.BaseAdapter;
 
 import com.crowdpp.nagisa.crowdpp2.service.UploadService;
 import com.crowdpp.nagisa.crowdpp2.util.TimePreference;
@@ -33,7 +34,9 @@ public class SettingFragment extends PreferenceFragmentCompat implements SharedP
 //    }
 
     private final String TAG = "SettingFragment";
+    TimePreference timePreference;
     SharedPreferences sharedPreferences;
+    private String period, start_hr, end_hr;
 
     @Override
     public void onCreatePreferences(Bundle bundle, String s) {
@@ -63,11 +66,24 @@ public class SettingFragment extends PreferenceFragmentCompat implements SharedP
         super.onCreate(savedInstanceState);
         Log.d("Setting Fragment", "oncreate");
         PreferenceManager.setDefaultValues(getActivity(), R.xml.preferences, false);
+        timePreference = (TimePreference) findPreference("period");
+        period = sharedPreferences.getString("period", "9,21");
+        start_hr = period.split(",")[0];
+        end_hr = period.split(",")[1];
+        timePreference.setSummary(start_hr + ":00 - " + end_hr + ":00");
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        Toolbar toolbar = ((MainActivity) getActivity()).toolbar;
+        toolbar.setNavigationOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                FragmentManager fm = getFragmentManager();
+                fm.popBackStack();
+            }
+        });
         //unregister the preferenceChange listener
         getPreferenceScreen().getSharedPreferences()
                 .registerOnSharedPreferenceChangeListener(this);
@@ -89,6 +105,14 @@ public class SettingFragment extends PreferenceFragmentCompat implements SharedP
 //            String str = pref.getEntries()[prefIndex].toString();
 //            Log.d("preferencechangedto", str);
 //        }
+
+        if(key.equals("period")) {
+            period = sharedPreferences.getString("period", "9,21");
+            start_hr = period.split(",")[0];
+            end_hr = period.split(",")[1];
+            timePreference.setSummary(start_hr + ":00 - " + end_hr + ":00");
+        }
+
         if (key.equals("upload")) {
             SwitchPreferenceCompat pref = (SwitchPreferenceCompat) findPreference(key);
             boolean checked = pref.isChecked();

@@ -34,4 +34,19 @@ public class HelpFragment extends Fragment {
             }
         });
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+//        FragmentManager fm = getFragmentManager();
+//        Log.d("clickinlog", Integer.toString(fm.getBackStackEntryCount()));
+        Toolbar toolbar = ((MainActivity) getActivity()).toolbar;
+        toolbar.setNavigationOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                FragmentManager fm = getFragmentManager();
+                fm.popBackStack();
+            }
+        });
+    }
 }
