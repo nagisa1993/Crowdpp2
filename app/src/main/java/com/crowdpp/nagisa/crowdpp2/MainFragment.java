@@ -94,8 +94,13 @@ public class MainFragment extends Fragment implements View.OnClickListener, Goog
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.activity_btn: {
-                if(!mGoogleApiClient.isConnected())
+                if(!mGoogleApiClient.isConnected()) {
                     mGoogleApiClient.connect();
+                    Toast.makeText(getContext(), "Activity collection begins!", Toast.LENGTH_SHORT).show();
+                }
+                else
+                    Toast.makeText(getContext(), "Activity collection has already been running!", Toast.LENGTH_SHORT).show();
+
                 break;
             }
 
