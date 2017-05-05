@@ -13,12 +13,15 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.crowdpp.nagisa.crowdpp2.util.Call;
 import com.crowdpp.nagisa.crowdpp2.util.LogAdapter;
 import com.crowdpp.nagisa.crowdpp2.util.Sms;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -60,64 +63,58 @@ public class LogFragment extends Fragment{
     public void feed() {
         mCallSMSAdapter = new LogAdapter(getContext());
         mRecyclerView.setAdapter(mCallSMSAdapter);
-        // quiry sms
-                Uri uriSms = Uri.parse("content://sms/inbox");
-                Cursor cursor_sms = getActivity().getContentResolver().query(uriSms, new String[]{"_id", "address", "date", "body", "date", "type"},null,null,null);
-
-                cursor_sms.moveToFirst();
-                while  (cursor_sms.moveToNext())
-                {
-                    String address = cursor_sms.getString(1);
-                    String body = cursor_sms.getString(3);
-
-                    Log.d(TAG, "Mobile number: " + address);
-                    Log.d(TAG, "Text: " + body);
-                }
-
-                // quiry call log
-                Uri allCalls = Uri.parse("content://call_log/calls");
-                Cursor cursor_call = getActivity().getContentResolver().query(allCalls, null, null, null, null);
-
-                cursor_call.moveToFirst();
-                while (cursor_call.moveToNext()) {
-                    String callerID = cursor_call.getString(cursor_call.getColumnIndex(CallLog.Calls._ID));
-                    String callerNumber = cursor_call.getString(cursor_call.getColumnIndex(CallLog.Calls.NUMBER));
-                    long callDateandTime = cursor_call.getLong(cursor_call.getColumnIndex(CallLog.Calls.DATE));
-                    long callDuration = cursor_call.getLong(cursor_call.getColumnIndex(CallLog.Calls.DURATION));
-                    int callType = cursor_call.getInt(cursor_call.getColumnIndex(CallLog.Calls.TYPE));
-                    if(callType == CallLog.Calls.INCOMING_TYPE)
-                    {
-                        //incoming call
-                    }
-                    else if(callType == CallLog.Calls.OUTGOING_TYPE)
-                    {
-                        //outgoing call
-                    }
-                    else if(callType == CallLog.Calls.MISSED_TYPE)
-                    {
-                        //missed call
-                    }
-                }
         mCallSMSList = new ArrayList<>();
+        SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy HH:mm");
 
-        mCallSMSList.add(new Call("John", "9:30 AM", "2"));
-        mCallSMSList.add(new Call("Rob", "9:40 AM", "2"));
-        mCallSMSList.add(new Sms("Sandy", "Hey, what's up?", "9:42 AM"));
-        mCallSMSList.add(new Call("Peter", "9:45 AM", "2"));
-        mCallSMSList.add(new Sms("John", "Are you writing blog?", "9:48 AM"));
-        mCallSMSList.add(new Call("Jack", "9:50 AM", "2"));
-        mCallSMSList.add(new Call("Bob", "9:55 AM", "2"));
-        mCallSMSList.add(new Sms("Kora", "Thanks dude", "9:57 AM"));
-        mCallSMSList.add(new Call("Sandy", "10:00 AM", "2"));
-        mCallSMSList.add(new Call("Kate", "10:05 AM", "2"));
-        mCallSMSList.add(new Sms("Nick", "Let's hang up", "10:10 AM"));
-        mCallSMSList.add(new Call("Roger", "10:15 AM", "2"));
-        mCallSMSList.add(new Call("Sid", "10:20 AM", "2"));
-        mCallSMSList.add(new Call("Kora", "10:25 AM", "2"));
-        mCallSMSList.add(new Call("Nick", "10:30 AM", "2"));
-        mCallSMSList.add(new Sms("Rose", "Bring me some chocolates", "1035:10 AM"));
-        mCallSMSList.add(new Call("Mia", "10:40 AM", "2"));
-        mCallSMSList.add(new Call("Scott", "10:45 AM", "2"));
+        // quiry sms
+        Uri uriSms = Uri.parse("content://sms/inbox");
+        Cursor cursor_sms = getActivity().getContentResolver().query(uriSms, new String[]{"_id", "address", "date", "body", "type"},null,null,null);
+
+        cursor_sms.moveToFirst();
+        while  (cursor_sms.moveToNext())
+        {
+            String address = cursor_sms.getString(1);
+            String date = cursor_sms.getString(2);
+            date = df.format(new Date(Long.parseLong(date)));
+            String body = cursor_sms.getString(3);
+
+            mCallSMSList.add(new Sms(address, body, date));
+        }
+
+        // quiry call log
+        Uri allCalls = Uri.parse("content://call_log/calls");
+        Cursor cursor_call = getActivity().getContentResolver().query(allCalls, null, null, null, android.provider.CallLog.Calls.DATE + " DESC");
+
+        cursor_call.moveToFirst();
+        while (cursor_call.moveToNext()) {
+            //String ID = cursor_call.getString(cursor_call.getColumnIndex(CallLog.Calls._ID));
+            String address = cursor_call.getString(cursor_call.getColumnIndex(CallLog.Calls.NUMBER));
+            String date = cursor_call.getString(cursor_call.getColumnIndex(android.provider.CallLog.Calls.DATE));
+            String duration = cursor_call.getString(cursor_call.getColumnIndex(CallLog.Calls.DURATION));
+            int type = cursor_call.getInt(cursor_call.getColumnIndex(CallLog.Calls.TYPE));
+            String callerType = null, callerDate;
+            callerDate = df.format(new Date(Long.parseLong(date)));
+            if(type == CallLog.Calls.INCOMING_TYPE)
+            {
+                //incoming call
+                callerType = "Incoming";
+            }
+            else if(type == CallLog.Calls.OUTGOING_TYPE)
+            {
+                //outgoing call
+                callerType = "Outgoing";
+            }
+            else if(type == CallLog.Calls.MISSED_TYPE)
+            {
+                //missed call
+                callerType = "Missed";
+            }
+            mCallSMSList.add(new Call(address, callerDate + ", " + callerType, duration + " sec"));
+        }
+
+        cursor_sms.close();
+        cursor_call.close();
+
         // Set items to adapter
         mCallSMSAdapter.setCallSMSFeed(mCallSMSList);
         mCallSMSAdapter.notifyDataSetChanged();

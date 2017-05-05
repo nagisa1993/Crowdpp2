@@ -1,6 +1,8 @@
 package com.crowdpp.nagisa.crowdpp2;
 
+import android.app.ActivityManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -69,11 +71,16 @@ public class MainFragment extends Fragment implements View.OnClickListener, Goog
                 .build();
 
         if(upload) {
-            Intent countIntent = new Intent(getContext(), UploadService.class);
-            getContext().startService(countIntent);
-            Log.d(TAG, "Start upload service in background");
+            if(!isServiceRunning(UploadService.class)) {
+                Intent countIntent = new Intent(getContext(), UploadService.class);
+                getContext().startService(countIntent);
+                Log.d(TAG, "Start upload service in background");
+            }
         }
         else {
+            if(isServiceRunning(UploadService.class)) {
+                getActivity().stopService(new Intent(getActivity(), UploadService.class));
+            }
             Log.d(TAG, "Upload service unenabled");
         }
 
@@ -189,5 +196,15 @@ public class MainFragment extends Fragment implements View.OnClickListener, Goog
             default:
                 return resources.getString(R.string.unidentifiable_activity, detectedActivityType);
         }
+    }
+
+    private boolean isServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getContext().getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

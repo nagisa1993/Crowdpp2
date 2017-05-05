@@ -45,7 +45,7 @@ public class UploadService extends Service{
     private String boundary = "******";
     private String selected, period, interval, duration, curr_hr;
     private boolean upload;
-    private int start_hr, end_hr;
+    private int start_hr, end_hr, interval_min;
 
     Queue<String> activityQueue = new LinkedList<String>();
 
@@ -61,23 +61,25 @@ public class UploadService extends Service{
         // kill service by itself when uploading service finish
         //stopSelf();
 
+        mPeriodicEventHandler = new Handler();
+
         // get settings
         settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         selected = settings.getString("interval", "1");
         interval = getResources().getStringArray(R.array.IntervalArrays)[Integer.parseInt(selected)];
+        interval_min = Integer.parseInt(interval.split("\\s+")[0]);
 //        selected = settings.getString("duration", "1");
 //        duration = getResources().getStringArray(R.array.DurationArrays)[Integer.parseInt(selected)];
         period = settings.getString("period", "9,21");
         start_hr = Integer.parseInt(period.split(",")[0]);
         end_hr = Integer.parseInt(period.split(",")[1]);
         upload = settings.getBoolean("upload", true);
-        Log.d("TAG", "setting: " + interval + duration + period);
+        Log.d("UploadService", "setting: " + interval + duration + period);
 
         curr_hr = Now.getHour();
         if(upload && Integer.parseInt(curr_hr) >= start_hr && Integer.parseInt(curr_hr) < end_hr) {
             // upload file every 1 minute
-            mPeriodicEventHandler = new Handler();
-            mPeriodicEventHandler.postDelayed(doPeriodicTask, Integer.parseInt(interval.split("\\\\s+")[0]));
+            mPeriodicEventHandler.postDelayed(doPeriodicTask, interval_min);
         }
         else if(!upload) {
             stopSelf();

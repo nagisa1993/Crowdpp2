@@ -1,6 +1,9 @@
 package com.crowdpp.nagisa.crowdpp2;
 
 
+import android.app.ActivityManager;
+import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
@@ -9,10 +12,12 @@ import android.support.v7.preference.ListPreference;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
 import android.support.v7.preference.PreferenceManager;
+import android.support.v7.preference.SwitchPreferenceCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 
+import com.crowdpp.nagisa.crowdpp2.service.UploadService;
 import com.crowdpp.nagisa.crowdpp2.util.TimePreference;
 
 /**
@@ -27,6 +32,7 @@ public class SettingFragment extends PreferenceFragmentCompat implements SharedP
 //        getFragmentManager().beginTransaction().replace(android.R.id.content, new SettingFragment()).commit();
 //    }
 
+    private final String TAG = "SettingFragment";
     SharedPreferences sharedPreferences;
 
     @Override
@@ -77,11 +83,29 @@ public class SettingFragment extends PreferenceFragmentCompat implements SharedP
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (key.equals("duration")) {
-            ListPreference pref = (ListPreference) findPreference(key);
-            int prefIndex = pref.findIndexOfValue(sharedPreferences.getString(key, ""));
-            String str = pref.getEntries()[prefIndex].toString();
-            Log.d("preferencechangedto", str);
+//        if (key.equals("duration")) {
+//            ListPreference pref = (ListPreference) findPreference(key);
+//            int prefIndex = pref.findIndexOfValue(sharedPreferences.getString(key, ""));
+//            String str = pref.getEntries()[prefIndex].toString();
+//            Log.d("preferencechangedto", str);
+//        }
+        if (key.equals("upload")) {
+            SwitchPreferenceCompat pref = (SwitchPreferenceCompat) findPreference(key);
+            boolean checked = pref.isChecked();
+            Log.d(TAG, "upload switch: " + (checked ? "true" : "false"));
+            if(checked) {
+                if(!isServiceRunning(UploadService.class)) {
+                    Intent countIntent = new Intent(getContext(), UploadService.class);
+                    getContext().startService(countIntent);
+                    Log.d(TAG, "Start upload service in background");
+                }
+            }
+            else {
+                if(isServiceRunning(UploadService.class)) {
+                    getActivity().stopService(new Intent(getActivity(), UploadService.class));
+                }
+                Log.d(TAG, "Upload service unenabled");
+            }
         }
     }
 
@@ -107,6 +131,16 @@ public class SettingFragment extends PreferenceFragmentCompat implements SharedP
             super.onDisplayPreferenceDialog(preference);
         }
 
+    }
+
+    private boolean isServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getContext().getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }
