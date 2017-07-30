@@ -7,12 +7,14 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.preference.PreferenceManager;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -39,6 +41,7 @@ public class MainFragment extends Fragment implements View.OnClickListener, Goog
     private boolean upload;
     private GoogleApiClient mGoogleApiClient;
     private ActivityDetectionBroadcastReceiver mBroadcastReceiver;
+    String phoneType;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -84,8 +87,10 @@ public class MainFragment extends Fragment implements View.OnClickListener, Goog
             Log.d(TAG, "Upload service unenabled");
         }
 
+        TelephonyManager tm = (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
+        phoneType = tm.getDeviceId() + "_" + Build.BRAND + Build.MODEL;
         // add broadcastreceiver
-        mBroadcastReceiver = new ActivityDetectionBroadcastReceiver(this);
+        mBroadcastReceiver = new ActivityDetectionBroadcastReceiver(this, phoneType);
 
         return rootView;
     }
@@ -151,7 +156,7 @@ public class MainFragment extends Fragment implements View.OnClickListener, Goog
     @Override
     public void onPause() {
         // unregister boardcastreceiver
-        LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(mBroadcastReceiver);
+        //LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(mBroadcastReceiver);
         super.onPause();
     }
 

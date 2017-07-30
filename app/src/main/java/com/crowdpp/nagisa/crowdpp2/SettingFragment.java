@@ -99,12 +99,12 @@ public class SettingFragment extends PreferenceFragmentCompat implements SharedP
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-//        if (key.equals("duration")) {
-//            ListPreference pref = (ListPreference) findPreference(key);
-//            int prefIndex = pref.findIndexOfValue(sharedPreferences.getString(key, ""));
-//            String str = pref.getEntries()[prefIndex].toString();
-//            Log.d("preferencechangedto", str);
-//        }
+        if (key.equals("interval")) {
+            ListPreference pref = (ListPreference) findPreference(key);
+            int prefIndex = pref.findIndexOfValue(sharedPreferences.getString(key, ""));
+            String str = pref.getEntries()[prefIndex].toString();
+            Log.d("preferencechangedto", str);
+        }
 
         if(key.equals("period")) {
             period = sharedPreferences.getString("period", "9,21");

@@ -74,12 +74,12 @@ public class UploadService extends Service{
         start_hr = Integer.parseInt(period.split(",")[0]);
         end_hr = Integer.parseInt(period.split(",")[1]);
         upload = settings.getBoolean("upload", true);
-        Log.d("UploadService", "setting: " + interval + duration + period);
+        Log.d("UploadService", "setting: " + interval_min);
 
         curr_hr = Now.getHour();
         if(upload && Integer.parseInt(curr_hr) >= start_hr && Integer.parseInt(curr_hr) < end_hr) {
             // upload file every 1 minute
-            mPeriodicEventHandler.postDelayed(doPeriodicTask, interval_min);
+            mPeriodicEventHandler.postDelayed(doPeriodicTask, interval_min*60*1000);
         }
         else if(!upload) {
             stopSelf();
@@ -217,7 +217,7 @@ public class UploadService extends Service{
                 }
                 else
                     canUpload = false;
-                mPeriodicEventHandler.postDelayed(doPeriodicTask, Integer.parseInt(interval.split("\\\\s+")[0]));
+                mPeriodicEventHandler.postDelayed(doPeriodicTask, interval_min*60*1000);
             }  catch (Exception ex) {
                 Log.e("PeriodicTask", ex.toString());
             }
