@@ -39,6 +39,12 @@
             </intent-filter>
         </receiver>
 
+        <!--<receiver android:name=".service.UploadService$NetworkStateReceiver">-->
+        	<!--<intent-filter>-->
+        		<!--<action android:name="android.net.conn.CONNECTIVITY_CHANGE" />-->
+        	<!--</intent-filter>-->
+        <!--</receiver>-->
+
         <service android:name=".service.ActivityRecognizedService"></service>
         <service android:name=".service.UploadService"></service>
     </application>

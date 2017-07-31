@@ -1,8 +1,13 @@
 package com.crowdpp.nagisa.crowdpp2.service;
 
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
@@ -48,6 +53,7 @@ public class UploadService extends Service {
     private String selected, period, interval, duration, curr_hr;
     private boolean upload;
     private int start_hr, end_hr, interval_min;
+    NetworkStateReceiver nr;
 
     Queue<String> activityQueue = new LinkedList<String>();
 
@@ -111,9 +117,9 @@ public class UploadService extends Service {
 
         //uploadFile();
 
-//        IntentFilter it = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
-//        nr = new NetworkStateReceiver();
-//        registerReceiver(nr, it);
+        IntentFilter it = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+        nr = new NetworkStateReceiver();
+        registerReceiver(nr, it);
         return START_STICKY;
     }
 
@@ -122,12 +128,12 @@ public class UploadService extends Service {
         mPeriodicEventHandler.removeCallbacks(doPeriodicTask);
         Log.i("Crowd++", "Service stop...");
         Toast.makeText(this, "Upload service stopping...", Toast.LENGTH_SHORT).show();
-        //unregisterReceiver(nr);
+        unregisterReceiver(nr);
         super.onDestroy();
     }
 
     // upload text file
-    private boolean uploadFile(){
+    public boolean uploadFile(){
         //Read all the Local un-uploaded Files into the list if any
         File note_dir = new File(Environment.getExternalStorageDirectory(), "Activity");
         if (!note_dir.exists()){
@@ -245,21 +251,26 @@ public class UploadService extends Service {
     };
 
     // network state boardcast receiver
-//    public class NetworkStateReceiver extends BroadcastReceiver {
-//        public void onReceive(Context context, Intent intent) {
-//            Log.d("app","Network connectivity change");
-//            if(intent.getExtras()!=null) {
-//                NetworkInfo ni = (NetworkInfo) intent.getExtras().get(ConnectivityManager.EXTRA_NETWORK_INFO);
-//                if(ni!=null && ni.getState() == NetworkInfo.State.CONNECTED) {
-//                    uploadFile(noteName);
-//                    Log.d("NetworkStateReceiver", "Network "+ ni.getTypeName() + " connected");
-//                }
-//            }
-//            if(intent.getExtras().getBoolean(ConnectivityManager.EXTRA_NO_CONNECTIVITY,Boolean.FALSE)) {
-//                Log.d("NetworkStateReceiver: ", "There's no network connectivity");
-//            }
-//        }
-//    }
+    public class NetworkStateReceiver extends BroadcastReceiver {
+        public NetworkStateReceiver() {
+            super();
+        }
+
+        public void onReceive(Context context, Intent intent) {
+            Log.d("app","Network connectivity change");
+            if(intent.getExtras()!=null) {
+                ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+                NetworkInfo ni = connectivityManager.getActiveNetworkInfo();
+                if(ni != null && ni.getState() == NetworkInfo.State.CONNECTED) {
+                    uploadFile();
+                    Log.d("NetworkStateReceiver", "Network "+ ni.getTypeName() + " connected");
+                }
+            }
+            if(intent.getExtras().getBoolean(ConnectivityManager.EXTRA_NO_CONNECTIVITY,Boolean.FALSE)) {
+                Log.d("NetworkStateReceiver: ", "There's no network connectivity");
+            }
+        }
+    }
 
     private void RecursiveDeleteFile(File file){
         if(file.isFile()){

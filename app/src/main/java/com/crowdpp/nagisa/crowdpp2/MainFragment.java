@@ -42,11 +42,22 @@ public class MainFragment extends Fragment implements View.OnClickListener, Goog
     private GoogleApiClient mGoogleApiClient;
     private ActivityDetectionBroadcastReceiver mBroadcastReceiver;
     String phoneType;
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Log.d(TAG, "oncreate in main fragment");
+        // Create a GoogleApiClient instance
+        mGoogleApiClient = new GoogleApiClient.Builder(getContext())
+                .addApi(ActivityRecognition.API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.main_fragment, container, false);
-        Log.d(TAG, "create main fragment");
+        Log.d(TAG, "oncreateview in main fragment");
 
         ((MainActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(false);
         ((MainActivity)getActivity()).getSupportActionBar().setTitle("Activity Logger");
@@ -65,13 +76,6 @@ public class MainFragment extends Fragment implements View.OnClickListener, Goog
 
         settings = PreferenceManager.getDefaultSharedPreferences(getContext());
         upload = settings.getBoolean("upload", true);
-
-        // Create a GoogleApiClient instance
-        mGoogleApiClient = new GoogleApiClient.Builder(getContext())
-                .addApi(ActivityRecognition.API)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .build();
 
         if(upload) {
             if(!isServiceRunning(UploadService.class)) {
@@ -101,10 +105,12 @@ public class MainFragment extends Fragment implements View.OnClickListener, Goog
             case R.id.activity_btn: {
                 if(!mGoogleApiClient.isConnected()) {
                     mGoogleApiClient.connect();
-                    Toast.makeText(getContext(), "Activity collection begins!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Activity collection begins.", Toast.LENGTH_SHORT).show();
                 }
-                else
-                    Toast.makeText(getContext(), "Activity collection has already been running!", Toast.LENGTH_SHORT).show();
+                else {
+                    Toast.makeText(getContext(), "Activity collection is already running.", Toast.LENGTH_SHORT).show();
+                }
+
 
                 break;
             }
@@ -158,6 +164,12 @@ public class MainFragment extends Fragment implements View.OnClickListener, Goog
         // unregister boardcastreceiver
         //LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(mBroadcastReceiver);
         super.onPause();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        Log.d(TAG, "ondestroyview in main fragment");
     }
 
     // override for GoogleApiClient
