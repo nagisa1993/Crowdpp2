@@ -6,7 +6,9 @@ import android.content.SharedPreferences;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
+import android.support.v7.preference.ListPreference;
 import android.support.v7.preference.PreferenceManager;
+import android.support.v7.preference.SwitchPreferenceCompat;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -28,7 +30,7 @@ import java.util.Queue;
  * @author Haiyue Ma
  */
 
-public class UploadService extends Service{
+public class UploadService extends Service {
     private String actionUrl = "http://54.196.39.156/uploadActivity.php";
     private final String TAG = "UploadService";
     private final int PERIODIC_EVENT_TIMEOUT = 60*1000;
@@ -49,6 +51,21 @@ public class UploadService extends Service{
 
     Queue<String> activityQueue = new LinkedList<String>();
 
+    SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+        public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+            // listener implementation
+
+            if (key.equals("interval")) {
+                settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                selected = settings.getString("interval", "0");
+                interval = getResources().getStringArray(R.array.IntervalArrays)[Integer.parseInt(selected)];
+                interval_min = Integer.parseInt(interval.split("\\s+")[0]);
+                Log.d("intervalchangedto", interval_min + "");
+            }
+
+        }
+    };
+
     public IBinder onBind(Intent intent) {
         return null;
     }
@@ -64,8 +81,8 @@ public class UploadService extends Service{
         mPeriodicEventHandler = new Handler();
 
         // get settings
-        settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        selected = settings.getString("interval", "1");
+        settings = PreferenceManager.getDefaultSharedPreferences(this);
+        selected = settings.getString("interval", "0");
         interval = getResources().getStringArray(R.array.IntervalArrays)[Integer.parseInt(selected)];
         interval_min = Integer.parseInt(interval.split("\\s+")[0]);
 //        selected = settings.getString("duration", "1");
@@ -75,6 +92,9 @@ public class UploadService extends Service{
         end_hr = Integer.parseInt(period.split(",")[1]);
         upload = settings.getBoolean("upload", true);
         Log.d("UploadService", "setting: " + interval_min);
+
+        // register preference change listener in service
+        settings.registerOnSharedPreferenceChangeListener(listener);
 
         curr_hr = Now.getHour();
         if(upload && Integer.parseInt(curr_hr) >= start_hr && Integer.parseInt(curr_hr) < end_hr) {

@@ -71,16 +71,27 @@ public class ActivityDetectionBroadcastReceiver extends BroadcastReceiver {
         JSONObject jsonObject = obj.makeJSONObject(date, time, activities, confidence, mostProbableActivity);
 
         try {
-            h = DateFormat.format("MM-dd-yyyyy-h-mmssaa", System.currentTimeMillis()).toString();
             File root = new File(Environment.getExternalStorageDirectory(), "Activity");
             if (!root.exists()) {
                 root.mkdirs();
             }
-            File filepath = new File(root, h + ".json");  // file path to save
-            FileWriter writer = new FileWriter(filepath);
-            writer.append(jsonObject.toString());
-            writer.flush();
-            writer.close();
+            String[] files = root.list();
+            if (files.length == 0) {
+                h = phoneType + "_" + DateFormat.format("MM-dd-yyyy-h-mm-ssaa", System.currentTimeMillis()).toString();
+                File filepath = new File(root, h + ".txt");  // file path to save
+                FileWriter writer = new FileWriter(filepath);
+                writer.append(jsonObject.toString());
+                writer.flush();
+                writer.close();
+            }
+            else {
+                h = root + "/" + files[files.length - 1];
+                FileWriter writer = new FileWriter(h, true);
+                writer.append(jsonObject.toString());
+                writer.flush();
+                writer.close();
+            }
+
         }
         catch (IOException e) {
             e.printStackTrace();

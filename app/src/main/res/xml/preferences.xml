@@ -16,7 +16,7 @@
         android:title="Interval"
         android:summary="%s"
         android:key="interval"
-        android:defaultValue="1"
+        android:defaultValue="0"
         android:entries="@array/IntervalArrays"
         android:entryValues="@array/IntervalValues" />
 
