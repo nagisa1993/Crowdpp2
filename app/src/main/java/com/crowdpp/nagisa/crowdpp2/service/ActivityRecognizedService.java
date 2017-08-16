@@ -10,6 +10,8 @@ import android.content.res.Resources;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.Environment;
+import android.os.HandlerThread;
+import android.os.Looper;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.LocalBroadcastManager;
@@ -20,6 +22,7 @@ import com.crowdpp.nagisa.crowdpp2.MainActivity;
 import com.crowdpp.nagisa.crowdpp2.R;
 import com.crowdpp.nagisa.crowdpp2.db.DataBaseHelper;
 import com.crowdpp.nagisa.crowdpp2.util.Constants;
+import com.crowdpp.nagisa.crowdpp2.util.NotificationDisplayer;
 import com.crowdpp.nagisa.crowdpp2.util.Now;
 import com.google.android.gms.location.ActivityRecognitionResult;
 import com.google.android.gms.location.DetectedActivity;
@@ -40,10 +43,10 @@ import static android.content.Context.*;
 
 public class ActivityRecognizedService extends IntentService{
 
+
     private static final String TAG = "IntentService";
 
-    static long sys_time;
-    static String date, start, end, filename;
+    NotificationDisplayer nd;
 
     public Queue<String> activityFilename = new LinkedList<String>();
     public static final int NOTIFICATIN_ID = 100;
@@ -56,6 +59,19 @@ public class ActivityRecognizedService extends IntentService{
     public ActivityRecognizedService(String name) {
         super(name);
     }
+
+    @Override
+    public void onCreate(){
+        super.onCreate();
+        nd = new NotificationDisplayer(NOTIFICATIN_ID, this, "Activity","Your activity is being logged.", R.drawable.ic_activity );
+        nd.showInfo();
+    }
+
+//    @Override
+//    public int onStartCommand(Intent intent, int flags, int startId){
+//        onStart(intent, startId);
+//        return START_STICKY;
+//    }
 
 
     @Override
@@ -70,6 +86,10 @@ public class ActivityRecognizedService extends IntentService{
 //            start = Now.getTimeOfDay();
 //            Log.d(TAG, "start time" + start);
 //            end = Now.getTimeOfDay();
+            if(nd == null){
+                nd = new NotificationDisplayer(NOTIFICATIN_ID, this, "Activity","Your activity is being logged.", R.drawable.ic_activity );
+                nd.showInfo();
+            }
 
             Log.d(TAG, "Activity_intent received, boardcasting activities...");
             Intent i = new Intent("com.crowdpp.nagisa.crowdpp2.ACTIVITY_ALL");
@@ -102,5 +122,9 @@ public class ActivityRecognizedService extends IntentService{
             default:
                 return resources.getString(R.string.unidentifiable_activity, detectedActivityType);
         }
+    }
+    @Override
+    public void onDestroy(){
+        nd.stop();
     }
 }

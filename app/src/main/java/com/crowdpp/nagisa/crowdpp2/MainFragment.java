@@ -117,21 +117,17 @@ public class MainFragment extends Fragment implements View.OnClickListener, Goog
             case R.id.activity_btn: {
                 String subject_id = settings.getString("subjectNumber", "");
                 phone_id = subject_id + "_" + Build.BRAND + Build.MODEL;
-
-                NotificationDisplayer nd = new NotificationDisplayer(NOTIFICATIN_ID, getActivity(), "Activity","Your activity is being logged.", R.drawable.ic_activity );
                 if(!mGoogleApiClient.isConnected()) {
                     mBroadcastReceiver = new ActivityDetectionBroadcastReceiver(this, phone_id);
                     LocalBroadcastManager.getInstance(getContext()).registerReceiver(mBroadcastReceiver, new IntentFilter("com.crowdpp.nagisa.crowdpp2.ACTIVITY_ALL"));
                     mGoogleApiClient.connect();
-
-                    nd.showInfo();
+//                    nd.showInfo();
                     Toast.makeText(getContext(), "Activity collection begins.", Toast.LENGTH_SHORT).show();
                 }
                 else {
                     mGoogleApiClient.disconnect();
                     Toast.makeText(getContext(), "Activity collection is closed.", Toast.LENGTH_SHORT).show();
                     LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(mBroadcastReceiver);
-                    nd.stop();
                 }
                 break;
             }
