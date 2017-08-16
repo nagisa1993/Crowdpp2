@@ -1,6 +1,8 @@
 package com.crowdpp.nagisa.crowdpp2;
 
 import android.app.ActivityManager;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -12,9 +14,10 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.preference.PreferenceManager;
-import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,7 +27,10 @@ import android.widget.Toast;
 
 import com.crowdpp.nagisa.crowdpp2.receiver.ActivityDetectionBroadcastReceiver;
 import com.crowdpp.nagisa.crowdpp2.service.ActivityRecognizedService;
+import com.crowdpp.nagisa.crowdpp2.service.AudioTimerService;
+import com.crowdpp.nagisa.crowdpp2.service.TextCallLogService;
 import com.crowdpp.nagisa.crowdpp2.service.UploadService;
+import com.crowdpp.nagisa.crowdpp2.util.NotificationDisplayer;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.ActivityRecognition;
@@ -35,13 +41,18 @@ import com.google.android.gms.location.DetectedActivity;
  */
 
 public class MainFragment extends Fragment implements View.OnClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
-    Button mActivityBtn, mSettingBtn, mHelpBtn, mLogBtn;
+    Button mActivityBtn, mSettingBtn, mHelpBtn, mLogBtn, mAudioBtn;
     private final String TAG = "MainFragment";
     private SharedPreferences settings;
     private boolean upload;
     private GoogleApiClient mGoogleApiClient;
     private ActivityDetectionBroadcastReceiver mBroadcastReceiver;
-    String phoneType;
+    String phone_id;
+    private View view;
+    private final static int NOTIFICATIN_ID = 100;
+    private NotificationManager mNotificationManager;
+
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,6 +63,8 @@ public class MainFragment extends Fragment implements View.OnClickListener, Goog
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
+
+
     }
 
     @Override
@@ -74,6 +87,9 @@ public class MainFragment extends Fragment implements View.OnClickListener, Goog
         mLogBtn = (Button) rootView.findViewById(R.id.log_btn);
         mLogBtn.setOnClickListener(this);
 
+        mAudioBtn = (Button) rootView.findViewById(R.id.audio_btn);
+        mAudioBtn.setOnClickListener(this);
+
         settings = PreferenceManager.getDefaultSharedPreferences(getContext());
         upload = settings.getBoolean("upload", true);
 
@@ -91,10 +107,6 @@ public class MainFragment extends Fragment implements View.OnClickListener, Goog
             Log.d(TAG, "Upload service unenabled");
         }
 
-        TelephonyManager tm = (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
-        phoneType = tm.getDeviceId() + "_" + Build.BRAND + Build.MODEL;
-        // add broadcastreceiver
-        mBroadcastReceiver = new ActivityDetectionBroadcastReceiver(this, phoneType);
 
         return rootView;
     }
@@ -103,15 +115,24 @@ public class MainFragment extends Fragment implements View.OnClickListener, Goog
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.activity_btn: {
+                String subject_id = settings.getString("subjectNumber", "");
+                phone_id = subject_id + "_" + Build.BRAND + Build.MODEL;
+
+                NotificationDisplayer nd = new NotificationDisplayer(NOTIFICATIN_ID, getActivity(), "Activity","Your activity is being logged.", R.drawable.ic_activity );
                 if(!mGoogleApiClient.isConnected()) {
+                    mBroadcastReceiver = new ActivityDetectionBroadcastReceiver(this, phone_id);
+                    LocalBroadcastManager.getInstance(getContext()).registerReceiver(mBroadcastReceiver, new IntentFilter("com.crowdpp.nagisa.crowdpp2.ACTIVITY_ALL"));
                     mGoogleApiClient.connect();
+
+                    nd.showInfo();
                     Toast.makeText(getContext(), "Activity collection begins.", Toast.LENGTH_SHORT).show();
                 }
                 else {
-                    Toast.makeText(getContext(), "Activity collection is already running.", Toast.LENGTH_SHORT).show();
+                    mGoogleApiClient.disconnect();
+                    Toast.makeText(getContext(), "Activity collection is closed.", Toast.LENGTH_SHORT).show();
+                    LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(mBroadcastReceiver);
+                    nd.stop();
                 }
-
-
                 break;
             }
 
@@ -135,14 +156,23 @@ public class MainFragment extends Fragment implements View.OnClickListener, Goog
                         .commit();
                 break;
             }
+            case R.id.audio_btn:{
+                if(!isServiceRunning(AudioTimerService.class)){
+                    Intent recordIntent = new Intent(getActivity(), AudioTimerService.class);
+                    getActivity().startService(recordIntent);
+                }else {
+                    getActivity().stopService(new Intent(getActivity(), AudioTimerService.class));
+                }
 
+                break;
+            }
             case R.id.log_btn: {
-                LogFragment logFragment = new LogFragment();
-                getFragmentManager()
-                        .beginTransaction()
-                        .replace(R.id.fragment_container, logFragment)
-                        .addToBackStack(null)
-                        .commit();
+                if(!isServiceRunning(TextCallLogService.class)){
+                    Intent logIntent = new Intent(getActivity(), TextCallLogService.class);
+                    getActivity().startService(logIntent);
+                }else{
+                    getActivity().stopService(new Intent(getActivity(), TextCallLogService.class));
+                }
                 break;
             }
 
@@ -156,7 +186,7 @@ public class MainFragment extends Fragment implements View.OnClickListener, Goog
     public void onResume() {
         // register boardcastreceiver
         super.onResume();
-        LocalBroadcastManager.getInstance(getContext()).registerReceiver(mBroadcastReceiver, new IntentFilter("com.crowdpp.nagisa.crowdpp2.ACTIVITY_ALL"));
+
     }
 
     @Override

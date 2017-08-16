@@ -5,22 +5,20 @@ package com.crowdpp.nagisa.crowdpp2.util;
  */
 
 public class Sms {
-    String name, body, date;
-    public Sms(String name, String body, String date) {
+    String name, date, smstype;
+    public Sms(String name, String date, String smstype) {
         this.name = name;
-        this.body = body;
         this.date = date;
+        this.smstype = smstype;
     }
 
     public String getName() {
         return name;
     }
 
-    public String getBody() {
-        return body;
-    }
-
     public String getDate() {
         return date;
     }
+
+    public String getSmstype() {return  smstype;}
 }

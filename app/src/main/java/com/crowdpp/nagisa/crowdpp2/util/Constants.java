@@ -64,6 +64,9 @@ public class Constants {
     public static String testPath = crowdppPath + "/test";
     public static String servicePath = crowdppPath + "/service";
     public static String calibrationPath = crowdppPath + "/calibration";
+    public static String activityPath = crowdppPath + "/activity";
+    public static String textPath = crowdppPath + "/text";
+    public static String callPath = crowdppPath + "/call";
 
     /** The flags for raw data */
     public static boolean test_raw_keep = true;

@@ -12,11 +12,12 @@ import java.util.ArrayList;
 public class ActivityJson extends JSONObject {
 
 
-    public JSONObject makeJSONObject(String date, String time, ArrayList<String> Activity, String Confidence, String most) {
+    public JSONObject makeJSONObject(String location, String date, String time, ArrayList<String> Activity, String Confidence, String most) {
 
         JSONObject obj = new JSONObject();
 
         try {
+            obj.put("location", location);
             obj.put("date", date);
             obj.put("time", time);
             obj.put("activity", Activity);

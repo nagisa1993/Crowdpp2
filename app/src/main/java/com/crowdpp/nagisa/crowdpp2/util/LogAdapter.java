@@ -98,9 +98,9 @@ public class LogAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
 
         public void showSmsDetail(Sms sms) {
-            smsName.setText(sms.getName());
-            smsBody.setText(sms.getBody());
-            smsDate.setText(sms.getDate());
+//            smsName.setText(sms.getName());
+//            smsBody.setText(sms.getBody());
+//            smsDate.setText(sms.getDate());
         }
     }
 

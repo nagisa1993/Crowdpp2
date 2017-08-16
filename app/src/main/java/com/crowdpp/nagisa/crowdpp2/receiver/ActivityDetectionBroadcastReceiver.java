@@ -12,6 +12,8 @@ import android.util.Log;
 import com.crowdpp.nagisa.crowdpp2.MainActivity;
 import com.crowdpp.nagisa.crowdpp2.MainFragment;
 import com.crowdpp.nagisa.crowdpp2.util.ActivityJson;
+import com.crowdpp.nagisa.crowdpp2.util.Constants;
+import com.crowdpp.nagisa.crowdpp2.util.LocationTracker;
 import com.google.android.gms.location.DetectedActivity;
 
 import org.json.JSONObject;
@@ -31,7 +33,7 @@ public class ActivityDetectionBroadcastReceiver extends BroadcastReceiver {
     //MainActivity mainContext;
     MainFragment mainFragmentContext;
     private static final String TAG = "BroadcastReceiver";
-    String act, h, date, time, mostProbableActivity, phoneType, confidence = "";
+    String act, h, date, time, mostProbableActivity, phoneType, confidence = "", location;
     ArrayList<DetectedActivity> detectedActivities;
     ArrayList<String> activities;
 
@@ -56,6 +58,14 @@ public class ActivityDetectionBroadcastReceiver extends BroadcastReceiver {
         confidence = "";
         activities = new ArrayList<>();
 
+        LocationTracker loc = new LocationTracker(context);
+        loc.getLocation();
+        if(loc.canGetLocation()){
+            location = "lat:" + loc.getLatitude() + " lon:" + loc.getLongitude();
+        }else{
+            location = "lat:-1 lon:-1";
+        }
+
         date = DateFormat.format("MM-dd-yyyy", System.currentTimeMillis()).toString();
         time = DateFormat.format("h-mm-ssaa", System.currentTimeMillis()).toString();
         //activityString  = "";
@@ -68,24 +78,24 @@ public class ActivityDetectionBroadcastReceiver extends BroadcastReceiver {
             //activityString +=  "Activity: " + act + ", Confidence: " + confidence + "%\n";
         }
         //activityString += "Most probable activity: " + mostProbableActivity;
-        JSONObject jsonObject = obj.makeJSONObject(date, time, activities, confidence, mostProbableActivity);
+        JSONObject jsonObject = obj.makeJSONObject(location, date, time, activities, confidence, mostProbableActivity);
 
         try {
-            File root = new File(Environment.getExternalStorageDirectory(), "Activity");
-            if (!root.exists()) {
-                root.mkdirs();
+            File activitypath = new File(Constants.activityPath);
+            if (!activitypath.exists()) {
+                activitypath.mkdirs();
             }
-            String[] files = root.list();
+            String[] files = activitypath.list();
             if (files.length == 0) {
                 h = phoneType + "_" + DateFormat.format("MM-dd-yyyy-h-mm-ssaa", System.currentTimeMillis()).toString();
-                File filepath = new File(root, h + ".txt");  // file path to save
+                File filepath = new File(activitypath, "/" + h + ".txt");  // file path to save
                 FileWriter writer = new FileWriter(filepath);
                 writer.append(jsonObject.toString());
                 writer.flush();
                 writer.close();
             }
             else {
-                h = root + "/" + files[files.length - 1];
+                h = activitypath + "/" + files[files.length - 1];
                 FileWriter writer = new FileWriter(h, true);
                 writer.append(jsonObject.toString());
                 writer.flush();
@@ -96,5 +106,7 @@ public class ActivityDetectionBroadcastReceiver extends BroadcastReceiver {
         catch (IOException e) {
             e.printStackTrace();
         }
+
+        loc.stopUsingGPS();
     }
 }

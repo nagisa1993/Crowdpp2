@@ -1,14 +1,22 @@
 package com.crowdpp.nagisa.crowdpp2.service;
 
 import android.app.IntentService;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Build;
 import android.os.Environment;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.crowdpp.nagisa.crowdpp2.MainActivity;
 import com.crowdpp.nagisa.crowdpp2.R;
 import com.crowdpp.nagisa.crowdpp2.db.DataBaseHelper;
 import com.crowdpp.nagisa.crowdpp2.util.Constants;
@@ -23,6 +31,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import static android.content.Context.*;
+
 /**
  * Activity Recognized Service
  * @author Haiyue Ma
@@ -36,6 +46,8 @@ public class ActivityRecognizedService extends IntentService{
     static String date, start, end, filename;
 
     public Queue<String> activityFilename = new LinkedList<String>();
+    public static final int NOTIFICATIN_ID = 100;
+
 
     public ActivityRecognizedService() {
         super("ActivityRecognizedService");
@@ -44,6 +56,7 @@ public class ActivityRecognizedService extends IntentService{
     public ActivityRecognizedService(String name) {
         super(name);
     }
+
 
     @Override
     protected void onHandleIntent(Intent intent) {

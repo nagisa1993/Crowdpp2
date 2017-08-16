@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.v7.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <android.support.v7.preference.PreferenceCategory
-        android:title="Interval">
+        android:title="Logging Time">
     <!--<ListPreference-->
         <!--android:title="Period"-->
         <!--android:summary="Specify when you want the service to run everyday."-->

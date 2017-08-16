@@ -5,11 +5,12 @@ package com.crowdpp.nagisa.crowdpp2.util;
  */
 
 public class Call {
-    String name, date, duration;
-    public Call(String name, String date, String duration) {
+    String name, date, duration, callerType;
+    public Call(String name, String date, String duration, String callerType) {
         this.name = name;
         this.date = date;
         this.duration = duration;
+        this.callerType = callerType;
     }
 
     public String getName() {
@@ -23,4 +24,6 @@ public class Call {
     public String getDuration() {
         return duration;
     }
+
+    public String getCallerType() { return callerType; }
 }

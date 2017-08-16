@@ -37,6 +37,17 @@
             android:drawableTop="@drawable/ic_log"
             android:drawablePadding="20dp"
             style="@style/Widget.AppCompat.Button.Borderless"/>
+        <Button
+            android:id="@+id/audio_btn"
+            android:text="   Audio   "
+            android:layout_gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:theme="@style/MyButton"
+            android:textColor="@drawable/button_text_color"
+            android:drawableTop="@drawable/ic_keyboard_voice"
+            android:drawablePadding="20dp"
+            style="@style/Widget.AppCompat.Button.Borderless"/>
     </LinearLayout>
 
 
